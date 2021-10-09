@@ -1,6 +1,6 @@
 require 'net/http'
 require 'json'
-require './config.rb'
+require File.join(__dir__, 'config')
 
 # https://github.com/go-shiori/shiori/wiki/API
 
@@ -38,7 +38,7 @@ def reload_session
   paylod = {
     'username': USER_NAME,
     'password': PASSWORD,
-    'remember': 1,          # session exptime hour
+    'remember': 1,
     'owner': true
   }
 
@@ -46,17 +46,25 @@ def reload_session
   @session_id = JSON.parse(response.body)['session']
 end
 
+def url?(url)
+  url.match(URI::DEFAULT_PARSER.make_regexp)
+end
+
 def add_bookmark(url:, tags: nil, title: nil, excerpt: nil)
   puts(url)
+  unless url?(url)
+    puts('ERROR: not url')
+    return false
+  end
+
   paylod = {
     'url': url,
-  	'createArchive': true,
-  	'public': 0,
-  	'tags': tags,
+    'createArchive': true,
+    'public': 0,
+    'tags': tags,
     'title': title,
-  	'excerpt': excerpt
+    'excerpt': excerpt
   }
-
   response = shiori_post('/api/bookmarks', paylod.compact)
   puts(response.code)
 end
@@ -72,9 +80,12 @@ def fetch_bookmarks
 end
 
 def session_active?
-  return false if @session_id.nil?
-  response = fetch_bookmarks
-  response.code == '200'
+  if @session_id.nil?
+    false
+  else
+    response = fetch_bookmarks
+    response.code == '200'
+  end
 end
 
 def write_cache_session_id(session_id)
@@ -87,14 +98,14 @@ end
 
 def markdown_urls_from_clipboard
   clip = `pbpaste`
-  urls = clip.scan(/\((https?:\/\/.*?)\)/).flatten.uniq
+  puts(clip)
 
-  unless urls.empty?
-    return urls
-  else
-    puts clip
-    raise 'ERROR not md urls'
+  urls = clip.scan(URI::DEFAULT_PARSER.make_regexp).map do |url|
+    url.first.match(/https+/) || next
+    url.compact.insert(1, '://').join.gsub(/\)$/, '')
   end
+  urls = urls.compact
+  urls.empty? ? raise('ERROR not md urls') : urls
 end
 
 init
