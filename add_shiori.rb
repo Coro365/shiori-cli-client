@@ -100,11 +100,10 @@ def markdown_urls_from_clipboard
   clip = `pbpaste`
   puts(clip)
 
-  urls = clip.scan(URI::DEFAULT_PARSER.make_regexp).map do |url|
-    url.first.match(/https+/) || next
-    url.compact.insert(1, '://').join.gsub(/\)$/, '')
+  regexp = URI::DEFAULT_PARSER.make_regexp(['http', 'https'])
+  urls = clip.to_enum(:scan, regexp).map { Regexp.last_match }.map do |match|
+    match[0].gsub(/\)$/, '')
   end
-  urls = urls.compact
   urls.empty? ? raise('ERROR not md urls') : urls
 end
 
