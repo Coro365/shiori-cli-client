@@ -101,8 +101,9 @@ def markdown_urls_from_clipboard
   puts(clip)
 
   regexp = URI::DEFAULT_PARSER.make_regexp(['http', 'https'])
-  urls = clip.to_enum(:scan, regexp).map { Regexp.last_match }.map do |match|
-    match[0].gsub(/\)$/, '')
+  urls = clip.to_enum(:scan, regexp).map { Regexp.last_match }.map do |url|
+    # Delete markdown link end string and url anchor
+    url[0].gsub(/\)$/, '').gsub(/#.*$/, '')
   end
   urls.empty? ? raise('ERROR not md urls') : urls
 end
