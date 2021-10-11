@@ -1,9 +1,10 @@
 # Shiori-CLI-Client
-Send urls from CLI to shiori via API
+Send urls from CLI to shiori via API.  
+[Shiori](https://github.com/go-shiori/shiori) is a simple bookmarks manager written in the Go language.
 
-## Support OS
-* Linux
-* macOS
+## Requirements
+* [shiori server](https://github.com/go-shiori/shiori)
+* Linux or macOS
 
 ## Instllation
 1. Clone
